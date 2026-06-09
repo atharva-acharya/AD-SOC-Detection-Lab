@@ -1,0 +1,9 @@
+// IR-003 — DCSync Detection
+// MITRE ATT&CK: T1003.006
+// Author: Atharva
+// Date: June 2026
+
+event.code : "4662"
+  and winlog.event_data.AccessMaskDescription : "Control Access"
+  and winlog.event_data.ObjectServer : "DS"
+  and not user.name : ("DC01$" or "WIN10-VICTIM$")

@@ -1,0 +1,223 @@
+{
+	"name": "AD SOC Detection Lab — Attack Coverage",
+	"versions": {
+		"attack": "19",
+		"navigator": "5.3.2",
+		"layer": "4.5"
+	},
+	"domain": "enterprise-attack",
+	"description": "Detection coverage from Active Directory SOC Detection Lab — 7 attack scenarios simulated and detected using Elastic SIEM. Author: Atharva | MSc Cyber Security Engineering | University of Warwick",
+	"filters": {
+		"platforms": [
+			"Windows"
+		]
+	},
+	"sorting": 0,
+	"layout": {
+		"layout": "side",
+		"aggregateFunction": "average",
+		"showID": true,
+		"showName": true,
+		"showAggregateScores": false,
+		"countUnscored": false,
+		"expandedSubtechniques": "none"
+	},
+	"hideDisabled": false,
+	"techniques": [
+		{
+			"techniqueID": "T1110",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-001: Password Spraying detected via Event ID 4625 + SubStatus 0xC000006A. KQL detection rule deployed in Elastic SIEM.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1110.003",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-001: Password Spraying — CrackMapExec via SMB. 12 failed logons detected. KQL: event.code:4625 + LogonType:3 + SubStatus:0xc000006a",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1558",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-002: Kerberoasting detected via Event ID 4769 + TicketEncryptionType 0x17 (RC4-HMAC). KQL detection rule deployed.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1558.003",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-002: Kerberoasting — Impacket GetUserSPNs. RC4 TGS hash obtained for sqlsvc. KQL: event.code:4769 + TicketEncryptionType:0x17",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1003",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-003 + IR-004: DCSync and LSASS Dump both detected. Full domain credential dump achieved.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1003.006",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-003: DCSync — Impacket secretsdump. 36 replication operations in 327ms. KQL: event.code:4662 + AccessMaskDescription:Control Access + ObjectServer:DS",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1003.001",
+			"tactic": "credential-access",
+			"color": "#e60d0d",
+			"comment": "IR-004: LSASS Dump — comsvcs.dll MiniDump via rundll32. GrantedAccess 0x1FFFFF. KQL: event.code:10 + TargetImage:lsass.exe + GrantedAccess:0x1fffff",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1021",
+			"tactic": "lateral-movement",
+			"color": "#e60d0d",
+			"comment": "IR-005: PsExec Lateral Movement detected via Event ID 7045. Random service name pattern identified.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1021.002",
+			"tactic": "lateral-movement",
+			"color": "#e60d0d",
+			"comment": "IR-005: PsExec via SMB — Impacket. 5 random service installs detected on WIN10-Victim. KQL: event.code:7045 + exclusion of known-good services",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1550",
+			"tactic": "lateral-movement",
+			"color": "#e60d0d",
+			"comment": "IR-006: Pass-the-Hash detected via Event ID 4624 + NTLM auth from non-Windows source.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1550.002",
+			"tactic": "lateral-movement",
+			"color": "#e60d0d",
+			"comment": "IR-006: Pass-the-Hash — Evil-WinRM. Administrator hash from DCSync used directly. KQL: event.code:4624 + LogonType:3 + AuthPackage:NTLM + source.ip:10.0.0.4",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1053",
+			"tactic": "persistence",
+			"color": "#e60d0d",
+			"comment": "IR-007: Scheduled Task Persistence detected via Event ID 4698.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1053.005",
+			"tactic": "persistence",
+			"color": "#e60d0d",
+			"comment": "IR-007: Scheduled Task — schtasks. \\WindowsUpdate task masquerading as legitimate process. KQL: event.code:4698 + not TaskName:\\Microsoft\\*",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1562",
+			"tactic": "defense-evasion",
+			"color": "#e8a000",
+			"comment": "Observed: Windows Defender disabled before LSASS dump (IR-004). Tamper Protection and real-time monitoring disabled.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1562.001",
+			"tactic": "defense-evasion",
+			"color": "#e8a000",
+			"comment": "Observed: Defender disabled via Set-MpPreference and GUI before LSASS dump. Not primary detection target but observed during IR-004.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1036",
+			"tactic": "defense-evasion",
+			"color": "#e8a000",
+			"comment": "Observed: \\WindowsUpdate task name masquerades as legitimate Windows Update process (IR-007).",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1036.004",
+			"tactic": "defense-evasion",
+			"color": "#e8a000",
+			"comment": "Observed: Scheduled task named \\WindowsUpdate to evade casual inspection (IR-007).",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		}
+	],
+	"gradient": {
+		"colors": [
+			"#ff6666ff",
+			"#ff0000ff"
+		],
+		"minValue": 0,
+		"maxValue": 100
+	},
+	"legendItems": [
+		{
+			"color": "#e60d0d",
+			"label": "Detected — KQL rule deployed"
+		},
+		{
+			"color": "#e8a000",
+			"label": "Observed — no primary KQL rule"
+		}
+	],
+	"metadata": [],
+	"links": [],
+	"showTacticRowBackground": true,
+	"tacticRowBackground": "#1a1a2e",
+	"selectTechniquesAcrossTactics": false,
+	"selectSubtechniquesWithParent": false,
+	"selectVisibleTechniques": false
+}

@@ -1,0 +1,9 @@
+// IR-004 — LSASS Memory Dump Detection
+// MITRE ATT&CK: T1003.001
+// Author: Atharva
+// Date: June 2026
+
+event.code : "10"
+  and winlog.event_data.TargetImage : "C:\\Windows\\system32\\lsass.exe"
+  and winlog.event_data.GrantedAccess : "0x1fffff"
+  and not process.name : ("MsMpEng.exe" or "svchost.exe")

@@ -1,0 +1,10 @@
+// IR-006 — Pass-the-Hash Detection
+// MITRE ATT&CK: T1550.002
+// Author: Atharva
+// Date: June 2026
+
+event.code : "4624"
+  and winlog.event_data.LogonType : "3"
+  and winlog.event_data.AuthenticationPackageName : "NTLM"
+  and agent.hostname : "DC01"
+  and not source.ip : ("10.0.0.10" or "10.0.0.20" or "127.0.0.1")

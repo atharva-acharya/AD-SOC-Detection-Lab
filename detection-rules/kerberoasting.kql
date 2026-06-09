@@ -1,0 +1,8 @@
+// IR-002 — Kerberoasting Detection
+// MITRE ATT&CK: T1558.003
+// Author: Atharva
+// Date: June 2026
+
+event.code : "4769"
+  and winlog.event_data.TicketEncryptionType : "0x17"
+  and not winlog.event_data.ServiceName : ("krbtgt" or "*$")

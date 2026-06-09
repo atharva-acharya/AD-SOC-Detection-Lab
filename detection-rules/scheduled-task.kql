@@ -1,0 +1,8 @@
+// IR-007 — Scheduled Task Persistence Detection
+// MITRE ATT&CK: T1053.005
+// Author: Atharva
+// Date: June 2026
+
+event.code : "4698"
+  and not winlog.event_data.TaskName : "\\Microsoft\\*"
+  and not user.name : ("SYSTEM" or "Administrator")

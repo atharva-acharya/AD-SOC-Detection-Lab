@@ -1,0 +1,15 @@
+// IR-005 — PsExec Lateral Movement Detection
+// MITRE ATT&CK: T1021.002
+// Author: Atharva
+// Date: June 2026
+
+event.code : "7045"
+  and not winlog.event_data.ServiceName : (
+    "Sysmon64" or "SysmonDrv" or "winlogbeat"
+    or "VirtualBox Guest Additions Service" or "VBoxWddm"
+    or "Microsoft Defender Core Service"
+    or "Microsoft Edge Elevation Service (MicrosoftEdgeElevationService)"
+    or "Microsoft Update Health Service"
+    or "Printer Extensions and Notifications"
+    or "Intel(R) PRO/1000 NDIS 6 Adapter Driver"
+  )
