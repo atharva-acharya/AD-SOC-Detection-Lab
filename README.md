@@ -207,13 +207,13 @@ AD-SOC-Detection-Lab/
 
 > ⚠️ Lab environment only — do not reuse these credentials anywhere else.
 
-| System | Username | Password |
-|--------|----------|----------|
-| Ubuntu Server | soc-admin | Password123! |
-| Elastic superuser | elastic | C29=qKRonLY4vwt+Q=*2 |
-| DC01 Administrator | CORP\Administrator | Admin123! |
-| WIN10-Victim local | victim-user | Password123! |
-| All domain users | jsmith / sjohnson / mdavis / ewilson / tbrown | Password123! |
+| System             | Username                                      | Password   |
+| ------------------ | --------------------------------------------- | ---------- |
+| Ubuntu Server      | soc-admin                                     | [lab-only] |
+| Elastic superuser  | elastic                                       | [lab-only] |
+| DC01 Administrator | CORP\Administrator                            | [lab-only] |
+| WIN10-Victim local | victim-user                                   | [lab-only] |
+| All domain users   | jsmith / sjohnson / mdavis / ewilson / tbrown | [lab-only] |
 
 ## Author
 
