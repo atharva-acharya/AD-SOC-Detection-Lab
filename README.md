@@ -209,11 +209,11 @@ AD-SOC-Detection-Lab/
 
 | System | Username | Password |
 |--------|----------|----------|
-| Ubuntu Server | soc-admin | Password123! |
-| Elastic superuser | elastic | C29=qKRonLY4vwt+Q=*2 |
-| DC01 Administrator | CORP\Administrator | Admin123! |
-| WIN10-Victim local | victim-user | Password123! |
-| All domain users | jsmith / sjohnson / mdavis / ewilson / tbrown | Password123! |
+| Ubuntu Server | soc-admin | [Redacted] |
+| Elastic superuser | elastic | [Redacted] |
+| DC01 Administrator | CORP\Administrator | [Redacted] |
+| WIN10-Victim local | victim-user | [Redacted] |
+| All domain users | jsmith / sjohnson / mdavis / ewilson / tbrown | [Redacted] |
 
 ## Author
 
