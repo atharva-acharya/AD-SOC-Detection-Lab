@@ -223,7 +223,6 @@ AD-SOC-Detection-Lab/
 | DC01 Administrator | CORP\Administrator | [Redacted] |
 | WIN10-Victim local | victim-user | [Redacted] |
 | All domain users | jsmith / sjohnson / mdavis / ewilson / tbrown | [Redacted] |
->>>>>>> a1660b801dc3e8847dc7c7da18b123a8bc276d27
 
 ## Author
 
