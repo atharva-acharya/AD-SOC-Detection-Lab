@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 Sysmon detected rundll32.exe accessing LSASS memory with full access rights
 (0x1FFFFF) on WIN10-Victim. The CallTrace confirms comsvcs.dll MiniDump was
 used — a living-off-the-land technique that abuses a built-in Windows DLL to
@@ -93,7 +95,7 @@ C:\Windows\SYSTEM32\ntdll.dll
 ```
 
 **comsvcs.dll at offset +27502** confirms MiniDump function was called.
-This is the definitive indicator of the LOLBin LSASS dump technique. [Certain]
+This is the definitive indicator of the LOLBin LSASS dump technique.
 
 ### GrantedAccess Mask Breakdown
 
@@ -102,7 +104,11 @@ This is the definitive indicator of the LOLBin LSASS dump technique. [Certain]
 | PROCESS_ALL_ACCESS | 0x1FFFFF | Full process access — read/write memory |
 
 0x1FFFFF is the highest access level. Legitimate processes accessing LSASS
-use significantly lower access masks. Full access is a strong IOC. [Certain]
+use significantly lower access masks. Full access is a strong IOC.
+
+### Kibana Evidence
+
+![LSASS Dump — Sysmon Event 10](../assets/IR-004-lsass-dump-evidence.png)
 
 ---
 
@@ -186,7 +192,31 @@ event.code : "10"
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Windows Defender / MsMpEng.exe | AV regularly accesses LSASS for scanning | Exclude MsMpEng.exe and svchost.exe in the enhanced query — already included |
+| LSASS monitoring tools | Some PAM and security tools read LSASS | Whitelist specific security tool process names |
+| Crash dump generation | WerFault.exe accesses LSASS during crash | Add WerFault.exe to the exclusion list |
+| Task Manager (admin) | Admin opening Task Manager can trigger low-access events | 0x1FFFFF is specific enough — Task Manager uses lower access masks |
+
+**Tuning Recommendation:** The 0x1FFFFF GrantedAccess filter is already highly
+specific. Very few legitimate processes require full process access to LSASS.
+The CallTrace-based query (`*comsvcs*`) is the most precise — it will only fire
+on the specific MiniDump LOLBin technique and has near-zero false positive rate.
+In production, start with the CallTrace query and expand to the GrantedAccess
+query only if additional coverage is needed.
+
+**Production Gap Note:** This detection required Defender to be disabled first.
+In a production environment with Tamper Protection enabled, the Defender disable
+event (Event 7036 — service stopped, or PowerShell audit logs) would have fired
+**before** the dump. The Defender disable event is itself a high-severity alert
+that should be treated as a precursor indicator.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate:**
 1. Isolate WIN10-Victim from network — prevent credential reuse
@@ -215,7 +245,7 @@ event.code : "10"
 
 ---
 
-## 10. Attack Chain Correlation
+## 11. Attack Chain Correlation
 
 ```
 IR-001: Password Spray → Attacker gains jsmith credentials
@@ -226,7 +256,7 @@ IR-004: LSASS Dump ← THIS INCIDENT
       Defender disabled (T1562.001) before dump
       comsvcs.dll MiniDump — LOLBin technique
         ↓
-IR-005: PsExec Lateral Movement (next)
+IR-005: PsExec Lateral Movement
 ```
 
 The attacker now has credentials from both the domain level (IR-003)
@@ -235,7 +265,7 @@ disabled, lateral movement is the logical next step.
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **LOLBins are harder to block than malware** — rundll32 and comsvcs.dll
    are legitimate Windows components. Blocking them breaks functionality.
@@ -258,7 +288,7 @@ disabled, lateral movement is the logical next step.
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Method:** Living-off-the-Land (LOLBin)  
 **Binary:** rundll32.exe (legitimate Windows tool)  
@@ -266,6 +296,3 @@ disabled, lateral movement is the logical next step.
 **Command:** `rundll32.exe C:\Windows\System32\comsvcs.dll, MiniDump 672 C:\Windows\Temp\lsass.dmp full`  
 **Output Parsing:** pypykatz or Mimikatz offline  
 **Evasion:** Windows Defender disabled prior to execution
-
-
-![Evidence](assets/Pasted%20image%2020260609165125.png)

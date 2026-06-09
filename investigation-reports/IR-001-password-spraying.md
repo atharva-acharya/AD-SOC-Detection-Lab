@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 10 for context only.
+
 Multiple failed authentication attempts were detected against the Domain Controller
 (DC01) originating from a single source IP (10.0.0.4) within a compressed timeframe.
 The pattern — one password attempted across multiple distinct accounts — is consistent
@@ -69,6 +71,10 @@ Logon Process:     NtLmSsp
 |------|---------|----------|
 | 0xC000006A | Wrong password — account exists | jsmith, sjohnson, mdavis, ewilson, tbrown |
 | 0xC0000064 | Account does not exist | administrator (pre-rename) |
+
+### Kibana Evidence
+
+![Password Spraying — Event List](../assets/IR-001-password-spraying-evidence.png)
 
 ---
 
@@ -172,7 +178,24 @@ credential harvesting intent.
 
 ---
 
-## 9. Lessons Learned
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| User mistyping password on multiple accounts | Legitimate user with multiple accounts failing login | Add threshold — require 4+ unique accounts from same IP within 60 seconds |
+| Helpdesk testing multiple accounts | Internal IT running credential checks | Whitelist known helpdesk IPs from the detection rule |
+| Service account misconfiguration | Service trying wrong credentials repeatedly | Filter by excluding known service account names |
+| Legacy application using NTLM | App authenticating against multiple endpoints | Exclude known application IPs and service accounts |
+| Security scanner / vulnerability assessment | Authorised internal scanning tool | Whitelist scanner IP range during scheduled scan windows |
+
+**Tuning Recommendation:** The raw query will fire on any 4625 with LogonType 3.
+In production, wrap this in a threshold alert: 5+ Event 4625 hits from the same
+source.ip targeting 3+ unique user.name values within 60 seconds. This eliminates
+single mistyped password events while catching genuine spray patterns.
+
+---
+
+## 10. Lessons Learned
 
 1. **NTLM is dangerous** — this attack used NTLM over SMB. Kerberos pre-auth
    would have generated different (and more detectable) events via Event ID 4771.
@@ -190,9 +213,25 @@ credential harvesting intent.
 
 ---
 
-## 10. Attack Tool Reference
+## 11. Attack Tool Reference
 
 **Tool Used:** CrackMapExec (CME)  
 **Command:** `crackmapexec smb 10.0.0.10 -u users.txt -p WrongPassword1`  
 **Detection Evasion:** Single password per run avoids account lockout  
-**Protocol:** SMB — generates NTLM auth events visible in Security log  
+**Protocol:** SMB — generates NTLM auth events visible in Security log
+
+---
+
+## 12. Additional Findings During Investigation
+
+During investigation of the password spray alert, 6 additional failed
+authentication events were identified originating from WIN10-Victim (10.0.0.20)
+targeting account "victim-user" with SubStatus 0xC0000064 (account does not exist).
+
+These events predate the spray activity and were caused by a local account
+attempting domain authentication before the domain account was created.
+
+**Resolution:** Domain account created for victim-user in OU=IT,OU=Corp Users,DC=corp,DC=local.
+Events are unrelated to T1110.003 activity but were identified during investigation.
+This demonstrates the importance of baselining normal authentication failures
+to distinguish noise from genuine attack patterns.

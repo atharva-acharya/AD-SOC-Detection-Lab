@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 Five instances of a new service being installed on WIN10-Victim were detected
 within a 27-minute window. Each service used a randomly generated short name
 and a randomly named executable dropped into %systemroot%. This pattern is
@@ -90,6 +92,10 @@ Service Account:   LocalSystem
 | Service Account | LocalSystem | Highest privilege level |
 | Start Type | demand start | On-demand — not persistent |
 | Frequency | 5 installs in 27 minutes | Repeated lateral movement |
+
+### Kibana Evidence
+
+![PsExec — Random Service Installs](../assets/IR-005-psexec-evidence.png)
 
 ---
 
@@ -174,7 +180,33 @@ event.code : "4624"
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Legitimate software installation | New application installs a service | Service name will be descriptive, not 4-5 random characters — add name-length heuristic |
+| Windows Update | Occasionally installs new services | Service names follow Microsoft naming convention — whitelist known update service patterns |
+| IT admin remote deployment | SCCM/Intune pushing software | Whitelist known deployment tool service names and source IPs |
+| Sysinternals PsExec (legitimate) | IT team using real PsExec for admin tasks | Real PsExec uses PSEXESVC — add as exclusion. Random names = Impacket only |
+
+**Tuning Recommendation:** The primary false positive risk is legitimate service
+installations. The key discriminator is the service name pattern — random 4-5
+character alphanumeric names do not occur in legitimate software. In production,
+add a regex or length-based filter:
+- Service name length ≤ 5 characters AND
+- ImagePath starts with %systemroot%\ AND
+- Service account = LocalSystem
+
+This combination has near-zero false positive rate against legitimate installations.
+
+**Log Shipping Note:** During this investigation, a 5-10 minute delay was observed
+between Windows recording Event 7045 and Kibana receiving it. In production,
+optimise Winlogbeat polling interval and ensure direct log forwarding to reduce
+detection latency.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate:**
 1. Isolate WIN10-Victim from network immediately
@@ -203,7 +235,7 @@ event.code : "4624"
 
 ---
 
-## 10. Attack Chain Correlation
+## 11. Attack Chain Correlation
 
 ```
 IR-001: Password Spray → jsmith credentials
@@ -215,8 +247,8 @@ IR-005: PsExec Lateral Movement ← THIS INCIDENT
       5 SYSTEM shells obtained on WIN10-Victim
       Attacker has full control of endpoint
         ↓
-IR-006: Pass-the-Hash (next)
-IR-007: Scheduled Task Persistence (next)
+IR-006: Pass-the-Hash
+IR-007: Scheduled Task Persistence
 ```
 
 The attacker has now compromised both the Domain Controller (IR-003) and
@@ -224,7 +256,7 @@ a domain-joined endpoint (IR-005). The entire domain is under attacker control.
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **Random service names defeat signature detection** — static IOC lists
    are useless against Impacket PsExec. Pattern-based detection (short name +
@@ -248,7 +280,7 @@ a domain-joined endpoint (IR-005). The entire domain is under attacker control.
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Tool Used:** Impacket PsExec  
 **Command:** `impacket-psexec 'corp.local/Administrator:Admin123!@10.0.0.20'`  
@@ -256,7 +288,3 @@ a domain-joined endpoint (IR-005). The entire domain is under attacker control.
 **Execution Level:** NT AUTHORITY\SYSTEM  
 **Evasion:** Random service name + random executable name per run  
 **Prerequisite:** Valid administrator credentials + SMB access to target
-
-
-
-![Evidence](assets/Pasted%20image%2020260609181056.png)

@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 36 Directory Service replication operations were detected from domain account
 jsmith against DC01 within a 327ms window. The volume, speed, and source of
 these replication requests are inconsistent with legitimate AD replication —
@@ -98,14 +100,18 @@ Properties:            %%7688
 ### Credentials Extracted (Partial — From Attack Output)
 
 ```
-Administrator:500:aad3b435b51404eeaad3b435b51404ee:520126a03f5d5a8d836f1c4f34ede7ce:::
-krbtgt:502:aad3b435b51404eeaad3b435b51404ee:f00167d2039dae9412f0ee448ae15696:::
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:[redacted]:::
+krbtgt:502:aad3b435b51404eeaad3b435b51404ee:[redacted]:::
 corp.local\jsmith:1103:[lmhash]:[nthash]:::
 [all domain users — full dump obtained]
 ```
 
 > ⚠️ krbtgt hash exposure means the attacker can forge Golden Tickets — 
 > persistent access that survives password resets until krbtgt is reset twice.
+
+### Kibana Evidence
+
+![DCSync — 36 Replication Events](../assets/IR-003-dcsync-evidence.png)
 
 ---
 
@@ -194,7 +200,29 @@ is reset twice with a 10-hour gap between resets).
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Legitimate DC replication | DCs replicate with each other constantly | Exclude machine accounts (DC01$, DC02$) from the query — already in production rule |
+| AD Connect / Azure AD Sync | Sync account performs replication operations | Whitelist the MSOL_ or AAD sync service account by name |
+| Privileged Identity Management tools | Some PAM tools use replication rights | Whitelist known PAM service accounts |
+| Backup software | Some backup tools require DS replication rights | Audit and whitelist specific backup service accounts |
+
+**Tuning Recommendation:** The production detection query already excludes machine
+accounts. The main false positive risk is AD Connect sync accounts — in environments
+with Azure AD, the MSOL_ account legitimately performs replication operations.
+Whitelist this account explicitly. Any remaining hits from human accounts performing
+Control Access on DS objects within 5 seconds should be treated as DCSync until
+proven otherwise — the false positive rate for this pattern is extremely low.
+
+**Detection Gap Note:** Event 4662 requires "Audit Directory Service Access" to be
+enabled in Group Policy. Without this setting, DCSync is completely invisible in
+the event logs. Verify this audit policy is enabled in all production environments.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate — Execute Within 1 Hour:**
 1. Isolate DC01 from network — prevent further replication abuse
@@ -223,7 +251,7 @@ is reset twice with a 10-hour gap between resets).
 
 ---
 
-## 10. Attack Chain Correlation
+## 11. Attack Chain Correlation
 
 This is the third stage of a single coordinated attack chain:
 
@@ -237,7 +265,7 @@ IR-002: Kerberoasting (T1558.003)
 IR-003: DCSync (T1003.006) ← THIS INCIDENT
   └── jsmith (Domain Admin) used to dump entire domain
         ↓
-Next: Golden Ticket / Pass-the-Hash / Lateral Movement
+IR-004: LSASS Dump / IR-005: PsExec / IR-006: Pass-the-Hash
 ```
 
 All three incidents originate from 10.0.0.4. This is one attacker
@@ -245,7 +273,7 @@ progressing systematically through the kill chain — not three separate events.
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **Domain Admins is too powerful** — jsmith had Domain Admin rights
    specifically to simulate DCSync. In production, no user should be a
@@ -269,13 +297,10 @@ progressing systematically through the kill chain — not three separate events.
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Tool Used:** Impacket secretsdump  
 **Command:** `impacket-secretsdump 'corp.local/jsmith:Password123!@10.0.0.10'`  
 **Method:** DRSUAPI (MS-DRSR protocol)  
 **Output:** Full NTDS.DIT dump — all domain hashes + Kerberos keys  
 **Prerequisite:** Account with DS-Replication-Get-Changes-All right
-
-
-![Evidence](assets/Pasted%20image%2020260609163949.png)

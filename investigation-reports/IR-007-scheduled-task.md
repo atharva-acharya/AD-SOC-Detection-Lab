@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 A scheduled task named "\WindowsUpdate" was created on WIN10-Victim by
 victim-user at 18:30:24 UTC. The task is configured to execute cmd.exe
 as SYSTEM on every user logon — establishing persistent access that survives
@@ -110,6 +112,10 @@ Start Boundary:    2026-06-09T10:30:00
 | Command | cmd.exe | Generic shell — not a named application |
 | Output path | C:\Windows\Temp | Common attacker staging directory |
 
+### Kibana Evidence
+
+![Scheduled Task — Event 4698](../assets/IR-007-scheduled-task-evidence.png)
+
 ---
 
 ## 5. KQL Detection Query
@@ -202,7 +208,33 @@ maintains that access rather than escalating it further.
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Legitimate software creating scheduled tasks | Installers often create tasks for updates | Check task path — legitimate software uses \Microsoft\ or vendor-named paths, not root \ |
+| IT admin creating maintenance tasks | Sysadmin creating a SYSTEM task for maintenance | Whitelist specific admin accounts and task names created during change windows |
+| Windows Update itself | Creates and modifies tasks under \Microsoft\Windows\WindowsUpdate | The path \WindowsUpdate (root) vs \Microsoft\Windows\WindowsUpdate is the discriminator |
+| Security tools | Some AV/EDR products create SYSTEM tasks | Whitelist known security product task names |
+
+**Tuning Recommendation:** The high-fidelity query (SYSTEM task created by
+non-admin user) has very low false positive rate. In production, nearly all
+legitimate SYSTEM-level tasks are created by the SYSTEM account or Administrator
+during software installation — not by standard domain users. Any standard user
+creating a SYSTEM task outside a defined change window should be treated as
+high-severity immediately.
+
+**Audit Policy Note:** This detection required manual audit policy configuration
+(`auditpol /set /subcategory:"Other Object Access Events"`). In production,
+enforce this via Group Policy on all endpoints — without it, Event 4698 is
+never generated and scheduled task persistence is completely invisible.
+The first task creation in this lab was missed because the audit policy was
+not pre-configured — a real-world gap that would allow an attacker to establish
+persistence undetected.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate:**
 1. Delete the malicious scheduled task:
@@ -230,7 +262,7 @@ maintains that access rather than escalating it further.
 
 ---
 
-## 10. Attack Chain — Complete Kill Chain Summary
+## 11. Attack Chain — Complete Kill Chain Summary
 
 This is the final stage of the attack. The complete kill chain:
 
@@ -266,7 +298,7 @@ T1053.005  IR-007: Scheduled Task Persistence ← THIS INCIDENT
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **Audit policy gaps create blind spots** — Event 4698 requires explicit
    audit policy configuration. Default Windows settings do not log scheduled
@@ -290,7 +322,7 @@ T1053.005  IR-007: Scheduled Task Persistence ← THIS INCIDENT
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Method:** Native Windows schtasks utility  
 **Command:** `schtasks /create /tn "WindowsUpdate" /tr "cmd.exe /c whoami > C:\Windows\Temp\persist.txt" /sc onlogon /ru SYSTEM /f`  
@@ -298,6 +330,3 @@ T1053.005  IR-007: Scheduled Task Persistence ← THIS INCIDENT
 **Persistence Type:** OnLogon trigger — executes every user logon  
 **Privilege:** SYSTEM — maximum local privilege  
 **Detection Requirement:** Audit policy "Other Object Access Events" must be enabled
-
-
-![Evidence](assets/Pasted%20image%2020260609183526.png)

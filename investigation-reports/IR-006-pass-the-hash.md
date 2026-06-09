@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 Five successful NTLM network logons were detected on DC01 from source IP
 10.0.0.4 (Kali Linux) as Administrator within a 429-millisecond window.
 The authentication used NTLM rather than Kerberos — the definitive indicator
@@ -95,7 +97,11 @@ Key Length:            0
 
 A domain-joined Windows machine authenticating to the DC uses Kerberos by
 default. NTLM is used when the source cannot perform Kerberos — such as a
-Linux machine passing a raw hash. [Certain]
+Linux machine passing a raw hash.
+
+### Kibana Evidence
+
+![Pass-the-Hash — NTLM Logons](../assets/IR-006-pth-evidence.png)
 
 ---
 
@@ -158,7 +164,7 @@ event.code : "4624"
 | Target Host | DC01 (10.0.0.10) | Domain Controller |
 | Account | Administrator | Highest privilege domain account |
 | Auth Package | NTLM | Should be Kerberos for domain admin |
-| Hash Used | 520126a03f5d5a8d836f1c4f34ede7ce | Administrator NT hash from DCSync |
+| Hash Used | [redacted] | Administrator NT hash from DCSync |
 | Tool | Evil-WinRM | Pass-the-Hash over WinRM |
 | Logon Count | 5 in 429ms | Automated — impossible manually |
 | Port | 5985 (WinRM) | Remote management protocol |
@@ -180,7 +186,29 @@ event.code : "4624"
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Legacy application using NTLM to DC | Old app authenticating against DC | Identify and whitelist known legacy application IPs |
+| Helpdesk tool using NTLM | Support tools that don't support Kerberos | Whitelist helpdesk server IPs from the DC-targeted query |
+| Linux-based monitoring tools | Some monitoring agents use NTLM | Whitelist known monitoring agent IPs |
+| Network printer authentication | Printers authenticating via NTLM | Whitelist printer IP ranges |
+
+**Tuning Recommendation:** The primary query (source.ip : "10.0.0.4") is lab-specific
+and not suitable for production. The broader detection query excludes known internal
+IPs but will still fire on any new IP using NTLM to the DC. In production, maintain
+a whitelist of approved NTLM sources (legacy apps, monitoring tools, printers) and
+alert on anything outside that list.
+
+The velocity detection is the most production-ready rule — 3+ NTLM logons from the
+same IP within 5 seconds to a DC is a near-certain indicator regardless of the
+source IP. This catches PtH tools even from whitelisted IPs if they behave
+unusually. The 429ms window observed here would trigger immediately.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate:**
 1. Reset Administrator password immediately — invalidates current hash
@@ -208,7 +236,7 @@ event.code : "4624"
 
 ---
 
-## 10. Attack Chain Correlation
+## 11. Attack Chain Correlation
 
 ```
 IR-001: Password Spray → jsmith credentials obtained
@@ -221,7 +249,7 @@ IR-006: Pass-the-Hash ← THIS INCIDENT
       No password cracking required
       Full access to DC01 via WinRM
         ↓
-IR-007: Scheduled Task Persistence (next)
+IR-007: Scheduled Task Persistence
 ```
 
 Pass-the-Hash closes the loop — the attacker now has interactive access to
@@ -230,7 +258,7 @@ attack chain from IR-001 to IR-006 required cracking zero passwords.
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **NTLM is the enabler** — every attack in this chain that involved
    lateral movement used NTLM. Disabling NTLM breaks PtH entirely.
@@ -254,14 +282,11 @@ attack chain from IR-001 to IR-006 required cracking zero passwords.
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Tool Used:** Evil-WinRM  
-**Command:** `evil-winrm -i 10.0.0.10 -u Administrator -H 520126a03f5d5a8d836f1c4f34ede7ce`  
+**Command:** `evil-winrm -i 10.0.0.10 -u Administrator -H [redacted]`  
 **Protocol:** WinRM (port 5985)  
 **Authentication:** NTLM hash — no password required  
 **Result:** Full interactive PowerShell session on DC01 as Administrator  
 **Hash Source:** IR-003 DCSync output
-
-
-![Evidence](assets/Pasted%20image%2020260609182639.png)

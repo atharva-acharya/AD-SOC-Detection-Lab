@@ -10,6 +10,8 @@
 
 ## 1. Alert Summary
 
+> **Analyst Note:** This report documents a simulated attack scenario investigated as a live SOC alert. The investigation was conducted from the analyst's perspective — receiving a fired alert, examining raw log evidence, identifying the attack pattern, and recommending response actions. The attacker's tooling is documented in Section 12 for context only.
+
 A Kerberos service ticket request was detected using RC4-HMAC encryption (0x17)
 for a service account (sqlsvc) originating from an attacker-controlled machine
 (10.0.0.4). RC4 encryption on a TGS request is the primary indicator of a
@@ -85,6 +87,10 @@ $krb5tgs$23$*sqlsvc$CORP.LOCAL$corp.local/sqlsvc*$81a2b36c8c896e059f8a24...
 
 Hash format: **$krb5tgs$23$** — confirms RC4 (etype 23) Kerberoasting hash.
 Crackable offline with Hashcat mode **13100**.
+
+### Kibana Evidence
+
+![Kerberoasting — Event 4769 RC4](../assets/IR-002-kerberoasting-evidence.png)
 
 ---
 
@@ -170,7 +176,24 @@ service accounts with elevated privileges.
 
 ---
 
-## 9. Recommended Response Actions
+## 9. False Positive Analysis
+
+| Scenario | Why It Could Trigger | How To Tune |
+|----------|---------------------|-------------|
+| Legacy application using RC4 | Old application servers that don't support AES | Whitelist known legacy service accounts by name |
+| Windows XP / Server 2003 clients | Too old to support AES Kerberos | These should not exist in modern environments — flag as separate risk |
+| Misconfigured service account | Account not configured for AES support | Run `Set-ADUser -KerberosEncryptionType AES256` on all service accounts |
+| Security scanner | Some vulnerability scanners request RC4 tickets | Whitelist scanner service account or IP during scan windows |
+
+**Tuning Recommendation:** The enhanced query already excludes krbtgt and machine
+accounts. In production, additionally exclude known legacy service accounts that
+legitimately use RC4. Any remaining hits should be treated as high-confidence
+Kerberoasting indicators — especially if the requesting account is a standard
+user (not a service account) and the source IP is not a domain-joined machine.
+
+---
+
+## 10. Recommended Response Actions
 
 **Immediate:**
 1. Reset sqlsvc password immediately — assume it is compromised
@@ -195,7 +218,7 @@ service accounts with elevated privileges.
 
 ---
 
-## 10. Attack Chain Correlation
+## 11. Attack Chain Correlation
 
 This incident is directly linked to **IR-001 — Password Spraying**:
 
@@ -204,7 +227,7 @@ IR-001: Password Spray → jsmith credentials obtained (10.0.0.4)
             ↓
 IR-002: Kerberoasting → jsmith used to request TGS for sqlsvc (10.0.0.4)
             ↓
-Next: Offline cracking of sqlsvc hash → potential privilege escalation
+IR-003: DCSync → jsmith used to dump full domain credentials
 ```
 
 The attacker is progressing through the kill chain. IR-001 and IR-002 should
@@ -212,7 +235,7 @@ be treated as a single linked incident, not two separate events.
 
 ---
 
-## 11. Lessons Learned
+## 12. Lessons Learned
 
 1. **RC4 should not exist in modern environments** — enforcing AES-only
    Kerberos eliminates Kerberoasting entirely.
@@ -233,12 +256,9 @@ be treated as a single linked incident, not two separate events.
 
 ---
 
-## 12. Tool Reference
+## 13. Tool Reference
 
 **Tool Used:** Impacket GetUserSPNs  
 **Command:** `impacket-GetUserSPNs corp.local/jsmith:Password123! -dc-ip 10.0.0.10 -request`  
 **Output:** RC4-encrypted TGS hash for sqlsvc  
 **Crack Command (reference):** `hashcat -m 13100 hash.txt wordlist.txt`
-
-
-![Evidence](assets/Pasted%20image%2020260609162834.png)
