@@ -80,15 +80,15 @@ corp.local
 
 ![MITRE ATT&CK Coverage](AD_SOC_Detection_Lab__Attack_Coverage.svg)
 
-| # | Attack | MITRE Technique | Key Event ID | Status |
-|---|--------|----------------|--------------|--------|
-| 1 | Password Spraying | T1110.003 | Event ID 4625 | ⏳ Pending |
-| 2 | Kerberoasting | T1558.003 | Event ID 4769 | ⏳ Pending |
-| 3 | DCSync | T1003.006 | Event ID 4662 | ⏳ Pending |
-| 4 | LSASS Dump | T1003.001 | Sysmon Event 10 | ⏳ Pending |
-| 5 | PsExec Lateral Movement | T1021.002 | Sysmon Event 1 + 7045 | ⏳ Pending |
-| 6 | Pass-the-Hash | T1550.002 | Event ID 4624 Type 3 | ⏳ Pending |
-| 7 | Scheduled Task Persistence | T1053.005 | Event ID 4698 | ⏳ Pending |
+| #   | Attack                     | MITRE Technique | Key Event ID          | Status     |
+| --- | -------------------------- | --------------- | --------------------- | ---------- |
+| 1   | Password Spraying          | T1110.003       | Event ID 4625         | ✅ Complete |
+| 2   | Kerberoasting              | T1558.003       | Event ID 4769         | ✅ Complete |
+| 3   | DCSync                     | T1003.006       | Event ID 4662         | ✅ Complete |
+| 4   | LSASS Dump                 | T1003.001       | Sysmon Event 10       | ✅ Complete |
+| 5   | PsExec Lateral Movement    | T1021.002       | Sysmon Event 1 + 7045 | ✅ Complete |
+| 6   | Pass-the-Hash              | T1550.002       | Event ID 4624 Type 3  | ✅ Complete |
+| 7   | Scheduled Task Persistence | T1053.005       | Event ID 4698         | ✅ Complete |
 
 ## Build Progress
 
@@ -125,7 +125,7 @@ corp.local
 - [x] winlogbeat-8.19.16 data stream active in Elasticsearch
 - [x] winlogbeat-* data view created in Kibana Discover
 
-**WIN10-Victim — In Progress ⏳**
+**WIN10-Victim — ✅ Complete**
 - [x] Windows 10 Pro installed — WIN10-Victim (10.0.0.20 static)
 - [x] WIN10-Victim joined to corp.local domain
 - [x] Sysmon v15.20 installed — Olaf Hartong sysmonconfig.xml
@@ -172,9 +172,6 @@ AD-SOC-Detection-Lab/
 │
 ├── README.md
 │
-├── architecture/
-│   └── lab-diagram.png
-│
 ├── setup-guides/
 │   ├── 01-virtualbox-network.md
 │   ├── 02-domain-controller.md
@@ -207,7 +204,7 @@ AD-SOC-Detection-Lab/
 
 > ⚠️ Lab environment only — do not reuse these credentials anywhere else.
 
-<<<<<<< HEAD
+
 | System             | Username                                      | Password   |
 | ------------------ | --------------------------------------------- | ---------- |
 | Ubuntu Server      | soc-admin                                     | [lab-only] |
@@ -215,14 +212,6 @@ AD-SOC-Detection-Lab/
 | DC01 Administrator | CORP\Administrator                            | [lab-only] |
 | WIN10-Victim local | victim-user                                   | [lab-only] |
 | All domain users   | jsmith / sjohnson / mdavis / ewilson / tbrown | [lab-only] |
-=======
-| System | Username | Password |
-|--------|----------|----------|
-| Ubuntu Server | soc-admin | [Redacted] |
-| Elastic superuser | elastic | [Redacted] |
-| DC01 Administrator | CORP\Administrator | [Redacted] |
-| WIN10-Victim local | victim-user | [Redacted] |
-| All domain users | jsmith / sjohnson / mdavis / ewilson / tbrown | [Redacted] |
 
 ## Author
 
