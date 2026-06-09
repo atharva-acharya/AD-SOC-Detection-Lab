@@ -114,7 +114,7 @@ corp.local
 - [x] 5 domain users created across departments
 - [x] jsmith added to Domain Admins for DCSync simulation
 
-### Phase 3 — Telemetry ⏳ In Progress
+### Phase 3 — Telemetry ✅ Complete
 
 **DC01 — Complete ✅**
 - [x] Sysmon v15.20 installed on DC01 — Olaf Hartong sysmonconfig.xml
@@ -130,27 +130,27 @@ corp.local
 - [x] WIN10-Victim joined to corp.local domain
 - [x] Sysmon v15.20 installed — Olaf Hartong sysmonconfig.xml
 - [x] Winlogbeat 8.19.16 downloaded and extracted
-- [ ] Winlogbeat configured on WIN10-Victim
-- [ ] Winlogbeat service installed and started on WIN10-Victim
-- [ ] WIN10-Victim logs confirmed flowing into Kibana
+- [x] Winlogbeat configured on WIN10-Victim
+- [x] Winlogbeat service installed and started on WIN10-Victim
+- [x] WIN10-Victim logs confirmed flowing into Kibana — 19,927+ documents verified
 
-### Phase 4 — Attack Simulation + Detection ⏳ Pending
+### Phase 4 — Attack Simulation + Detection ✅ Complete
 
-- [ ] Password Spraying — simulated and detected
-- [ ] Kerberoasting — simulated and detected
-- [ ] DCSync — simulated and detected
-- [ ] LSASS Dump — simulated and detected
-- [ ] PsExec Lateral Movement — simulated and detected
-- [ ] Pass-the-Hash — simulated and detected
-- [ ] Scheduled Task Persistence — simulated and detected
+- [x] Password Spraying — simulated and detected
+- [x] Kerberoasting — simulated and detected
+- [x] DCSync — simulated and detected
+- [x] LSASS Dump — simulated and detected
+- [x] PsExec Lateral Movement — simulated and detected
+- [x] Pass-the-Hash — simulated and detected
+- [x] Scheduled Task Persistence — simulated and detected
 
-### Phase 5 — Documentation + GitHub ⏳ Pending
+### Phase 5 — Documentation + GitHub ✅ Complete
 
-- [ ] Architecture diagram (draw.io)
-- [ ] KQL detection rules — one file per attack
-- [ ] MITRE ATT&CK Navigator layer exported
-- [ ] SOC investigation reports — one per attack scenario
-- [ ] GitHub repository published and README updated
+- [x] KQL detection rules — 7 files, one per attack
+- [x] MITRE ATT&CK Navigator layer exported (v19)
+- [x] SOC investigation reports — IR-001 through IR-007
+- [x] Setup guides — 4 phases documented
+- [x] GitHub repository published
 
 ## Winlogbeat Event Log Sources
 
