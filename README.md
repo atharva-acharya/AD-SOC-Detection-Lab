@@ -218,4 +218,4 @@ AD-SOC-Detection-Lab/
 **Atharva**
 MSc Cyber Security Engineering — University of Warwick
 HackTheBox CDSA — Certified June 2026
-Targeting: Tier 1 SOC Analyst | UK | Right to Work — No Sponsorship Required
+Targeting: Tier 1 SOC Analyst | UK 
