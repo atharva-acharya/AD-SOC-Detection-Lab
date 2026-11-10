@@ -1,5 +1,19 @@
 # Active Directory SOC Detection Lab
 
+## In 30 seconds
+
+**Question:** Can a small SOC see a full Active Directory compromise, from password spraying through to persistence, using only Windows and Sysmon logs in Elastic?
+
+**Finding:** In this personal lab, all 7 attacks run from a Kali attacker host were caught by KQL rules in Elastic and linked into one chain. Examples: 6 failed logons across 6 accounts in 140ms (password spray), 36 directory replication events in 327ms (DCSync) and 5 NTLM Administrator logons in 429ms (pass-the-hash).
+
+**Recommendation:** Alert on speed and volume, not single events: thresholds on Event IDs 4625 and 4662 catch spraying and DCSync. Then close the gaps the chain relied on: account lockout and MFA, AES-only service accounts or gMSA, no standing Domain Admins (just-in-time access), and Directory Service Access auditing switched on so Event 4662 exists at all.
+
+**Skills shown:** Elastic SIEM, KQL, Sysmon, Winlogbeat, Windows Security events, Active Directory, MITRE ATT&CK, incident reporting.
+
+**Start here:** [IR-003 DCSync](investigation-reports/IR-003-dcsync.md), where one compromised account becomes full domain compromise and the chain from IR-001 to IR-006 is traced.
+
+---
+
 ## Overview
 A home lab simulating an enterprise Active Directory environment for hands-on
 SOC analyst training. The lab deploys real attack scenarios and builds
@@ -218,4 +232,5 @@ AD-SOC-Detection-Lab/
 **Atharva**
 MSc Cyber Security Engineering — University of Warwick
 HackTheBox CDSA — Certified June 2026
+Microsoft SC-200 (Security Operations Analyst Associate), certified 2026
 Targeting: Tier 1 SOC Analyst | UK 
