@@ -45,7 +45,7 @@ Windows Server 2022 (DC01) ──► Sysmon ──► Winlogbeat ──► Ubunt
 | Windows Server 2022 | Domain Controller (DC01) | 10.0.0.10 |
 | Windows 10 | Victim Endpoint (WIN10-Victim) | 10.0.0.20 |
 
-- **Network:** VirtualBox NAT Network — SOC-Lab
+- **Network:** VirtualBox NAT Network: SOC-Lab
 - **Range:** 10.0.0.0/24
 - **Hypervisor:** Oracle VirtualBox 7.1
 
@@ -106,64 +106,64 @@ corp.local
 
 ## Build Progress
 
-### Phase 1 — Infrastructure ✅ Complete
+### Phase 1: Infrastructure ✅ Complete
 
-- [x] VirtualBox NAT Network created — SOC-Lab (10.0.0.0/24)
-- [x] Kali Linux 2026.1 imported and attached to SOC-Lab — 10.0.0.4
+- [x] VirtualBox NAT Network created: SOC-Lab (10.0.0.0/24)
+- [x] Kali Linux 2026.1 imported and attached to SOC-Lab: 10.0.0.4
 - [x] Guest Additions installed on Kali
-- [x] Ubuntu Server 22.04 installed — static IP 10.0.0.5
+- [x] Ubuntu Server 22.04 installed: static IP 10.0.0.5
 - [x] Elasticsearch 8.19.16 installed and running
 - [x] Kibana 8.19.16 installed and accessible at http://127.0.0.1:5601
-- [x] SSH port forwarding configured — host port 2222 → guest port 22
+- [x] SSH port forwarding configured: host port 2222 → guest port 22
 - [x] Elastic superuser password generated and saved
 
-### Phase 2 — Active Directory ✅ Complete
+### Phase 2: Active Directory ✅ Complete
 
 - [x] Windows Server 2022 (Desktop Experience) installed
-- [x] DC01 renamed and static IP assigned — 10.0.0.10
+- [x] DC01 renamed and static IP assigned: 10.0.0.10
 - [x] Active Directory Domain Services installed
-- [x] Forest promoted — corp.local
-- [x] DNS configured — DC01 as primary DNS server
-- [x] OU structure created — Corp Users > IT, HR, Finance
+- [x] Forest promoted: corp.local
+- [x] DNS configured: DC01 as primary DNS server
+- [x] OU structure created: Corp Users > IT, HR, Finance
 - [x] 5 domain users created across departments
 - [x] jsmith added to Domain Admins for DCSync simulation
 
-### Phase 3 — Telemetry ✅ Complete
+### Phase 3: Telemetry ✅ Complete
 
-**DC01 — Complete ✅**
-- [x] Sysmon v15.20 installed on DC01 — Olaf Hartong sysmonconfig.xml
+**DC01: Complete ✅**
+- [x] Sysmon v15.20 installed on DC01: Olaf Hartong sysmonconfig.xml
 - [x] Winlogbeat 8.19.16 installed and configured on DC01
 - [x] Winlogbeat ingest pipelines loaded into Elasticsearch
 - [x] Winlogbeat index templates and Kibana dashboards loaded
-- [x] Logs confirmed flowing into Kibana — 4,724+ documents verified
+- [x] Logs confirmed flowing into Kibana: 4,724+ documents verified
 - [x] winlogbeat-8.19.16 data stream active in Elasticsearch
 - [x] winlogbeat-* data view created in Kibana Discover
 
-**WIN10-Victim — ✅ Complete**
-- [x] Windows 10 Pro installed — WIN10-Victim (10.0.0.20 static)
+**WIN10-Victim: ✅ Complete**
+- [x] Windows 10 Pro installed: WIN10-Victim (10.0.0.20 static)
 - [x] WIN10-Victim joined to corp.local domain
-- [x] Sysmon v15.20 installed — Olaf Hartong sysmonconfig.xml
+- [x] Sysmon v15.20 installed: Olaf Hartong sysmonconfig.xml
 - [x] Winlogbeat 8.19.16 downloaded and extracted
 - [x] Winlogbeat configured on WIN10-Victim
 - [x] Winlogbeat service installed and started on WIN10-Victim
-- [x] WIN10-Victim logs confirmed flowing into Kibana — 19,927+ documents verified
+- [x] WIN10-Victim logs confirmed flowing into Kibana: 19,927+ documents verified
 
-### Phase 4 — Attack Simulation + Detection ✅ Complete
+### Phase 4: Attack Simulation + Detection ✅ Complete
 
-- [x] Password Spraying — simulated and detected
-- [x] Kerberoasting — simulated and detected
-- [x] DCSync — simulated and detected
-- [x] LSASS Dump — simulated and detected
-- [x] PsExec Lateral Movement — simulated and detected
-- [x] Pass-the-Hash — simulated and detected
-- [x] Scheduled Task Persistence — simulated and detected
+- [x] Password Spraying: simulated and detected
+- [x] Kerberoasting: simulated and detected
+- [x] DCSync: simulated and detected
+- [x] LSASS Dump: simulated and detected
+- [x] PsExec Lateral Movement: simulated and detected
+- [x] Pass-the-Hash: simulated and detected
+- [x] Scheduled Task Persistence: simulated and detected
 
-### Phase 5 — Documentation + GitHub ✅ Complete
+### Phase 5: Documentation + GitHub ✅ Complete
 
-- [x] KQL detection rules — 7 files, one per attack
+- [x] KQL detection rules: 7 files, one per attack
 - [x] MITRE ATT&CK Navigator layer exported (v19)
-- [x] SOC investigation reports — IR-001 through IR-007
-- [x] Setup guides — 4 phases documented
+- [x] SOC investigation reports: IR-001 through IR-007
+- [x] Setup guides: 4 phases documented
 - [x] GitHub repository published
 
 ## Winlogbeat Event Log Sources
@@ -185,6 +185,10 @@ Winlogbeat is configured to collect the following event logs on both DC01 and WI
 AD-SOC-Detection-Lab/
 │
 ├── README.md
+├── AD_SOC_Detection_Lab__Attack_Coverage.svg
+│
+├── assets/
+│   └── IR-001 to IR-007 evidence screenshots (.png)
 │
 ├── setup-guides/
 │   ├── 01-virtualbox-network.md
@@ -216,7 +220,7 @@ AD-SOC-Detection-Lab/
 
 ## Credentials Reference
 
-> ⚠️ Lab environment only — do not reuse these credentials anywhere else.
+> ⚠️ Lab environment only: do not reuse these credentials anywhere else.
 
 
 | System             | Username                                      | Password   |
@@ -227,10 +231,16 @@ AD-SOC-Detection-Lab/
 | WIN10-Victim local | victim-user                                   | [lab-only] |
 | All domain users   | jsmith / sjohnson / mdavis / ewilson / tbrown | [lab-only] |
 
+## Related Projects
+
+- [Microsoft Sentinel Detection Lab](https://github.com/atharva-acharya/Sentinel-Detection-Lab): Azure SIEM, 5 KQL analytics rules on Windows Security Events via AMA, 5 IR reports
+- [Splunk SIEM Investigation Lab](https://github.com/atharva-acharya/Splunk-SOC-Lab): Splunk SPL rules and IR reports tracing a web attack chain in the BOTS v3 dataset
+
 ## Author
 
-**Atharva**
-MSc Cyber Security Engineering — University of Warwick
-HackTheBox CDSA — Certified June 2026
-Microsoft SC-200 (Security Operations Analyst Associate), certified 2026
-Targeting: Tier 1 SOC Analyst | UK 
+**Atharva Acharya**  
+MSc Cyber Security Engineering, University of Warwick  
+CDSA Certified (HackTheBox, June 2026)  
+Microsoft SC-200 Certified (Security Operations Analyst Associate, 2026)  
+Targeting: Tier 1 SOC Analyst | UK  
+[GitHub](https://github.com/atharva-acharya) | [LinkedIn](https://www.linkedin.com/in/atharva-acharya-cyber) 
